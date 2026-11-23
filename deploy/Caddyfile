@@ -1,0 +1,27 @@
+{
+	# TLS is terminated by Cloudflare Tunnel; Caddy serves plain HTTP inside the host.
+	auto_https off
+}
+
+:80 {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+
+	# REST API, /api/health and /api/docs
+	handle /api/* {
+		reverse_proxy api:80
+	}
+
+	# Flutter web build
+	handle {
+		reverse_proxy web:80
+	}
+}

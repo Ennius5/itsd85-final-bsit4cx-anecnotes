@@ -1,0 +1,97 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Required check "backend" (branch ruleset, §10.1)
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: anecnotes_test
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci -d anecnotes_test"
+          --health-interval 5s --health-retries 10
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: anecnotes_test
+      DB_USERNAME: ci
+      DB_PASSWORD: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_pgsql, intl, zip
+          coverage: none
+      - uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env && php artisan key:generate
+      - name: Lint (Pint)
+        run: vendor/bin/pint --test
+      - name: Static analysis (Larastan)
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - name: Enable pg_trgm
+        run: PGPASSWORD=ci psql -h 127.0.0.1 -U ci -d anecnotes_test -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+      - name: Tests (Pest, against PostgreSQL)
+        run: vendor/bin/pest
+
+  # Required check "frontend"
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Lint
+        run: flutter analyze
+      - name: Tests
+        run: flutter test
+
+  # Automatic deployment on merge to main (DP3), on the self-hosted runner on the server.
+  # Disabled until the runner is registered (M3): set repository variable DEPLOY_ENABLED=true.
+  deploy:
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: self-hosted
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write .env from secrets
+        run: printf '%s' "${{ secrets.PROD_ENV }}" > .env
+      - name: Build and restart
+        run: APP_VERSION=${GITHUB_SHA::7} docker compose --profile tunnel up -d --build --remove-orphans
+      - name: Smoke test /api/health shows this commit
+        run: |
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:8080/api/health | grep -q "\"commit\":\"${GITHUB_SHA::7}\"" && exit 0
+            sleep 5
+          done
+          echo "Health check did not report ${GITHUB_SHA::7}" && exit 1

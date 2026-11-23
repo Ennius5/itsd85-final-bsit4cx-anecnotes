@@ -1,0 +1,81 @@
+# Anecnotes — full stack on one host (DP1).
+# Usage: cp .env.example .env  &&  docker compose up -d --build
+# Public HTTPS (option A): docker compose --profile tunnel up -d
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data # data survives redeploys (DP6)
+      - ./deploy/db-init:/docker-entrypoint-initdb.d:ro # enables pg_trgm
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_VERSION: ${APP_VERSION:-dev}
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      RUN_MIGRATIONS: "true"
+    volumes:
+      - api-storage:/app/storage/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Runs AI analysis and flag detection off the request path (fallback/retry, T3).
+  queue:
+    build:
+      context: ./backend
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+    command: ["php", "artisan", "queue:work", "--tries=5", "--backoff=60", "--max-time=3600"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on: [api, web]
+
+  tunnel: # public HTTPS URL via Cloudflare Tunnel (option A)
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on: [proxy]
+    profiles: [tunnel]
+
+volumes:
+  db-data:
+  api-storage:

@@ -1,0 +1,21 @@
+# Secrets (Q5)
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+key.properties
+
+# Data dumps / backups — never commit (RA 10173)
+backups/
+*.sql.gz
+*.dump
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Backend and frontend keep their own .gitignore files.
