@@ -1,6 +1,11 @@
 # Anecnotes — full stack on one host (DP1).
 # Usage: cp .env.example .env  &&  docker compose up -d --build
-# Public HTTPS (option A): docker compose --profile tunnel up -d
+# Public HTTPS (option A):
+#   quick tunnel, random trycloudflare.com URL, no account:  docker compose --profile quicktunnel up -d
+#   named tunnel, fixed domain (needs CLOUDFLARE_TUNNEL_TOKEN): docker compose --profile tunnel up -d
+
+# Fixed project name: the CI deploy and manual commands manage the same stack and database volume.
+name: anecnotes
 
 services:
   db:
@@ -70,13 +75,22 @@ services:
     depends_on: [api, web]
 
   tunnel: # public HTTPS URL via Cloudflare Tunnel (option A)
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2025.11.1
     restart: unless-stopped
     command: tunnel --no-autoupdate run
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on: [proxy]
     profiles: [tunnel]
+
+  # Quick tunnel: no Cloudflare account; prints a random https://*.trycloudflare.com URL in its log.
+  # The URL changes only when this container is recreated, not on normal redeploys.
+  quicktunnel:
+    image: cloudflare/cloudflared:2025.11.1
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://proxy:80
+    depends_on: [proxy]
+    profiles: [quicktunnel]
 
 volumes:
   db-data:
