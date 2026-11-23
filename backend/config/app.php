@@ -18,6 +18,9 @@ return [
     // Git commit deployed, shown at /api/health (DP5). Set by CI at build time.
     'version' => env('APP_VERSION', 'dev'),
 
+    // Password for the seeded demo accounts (sample data only).
+    'demo_password' => env('DEMO_PASSWORD', 'Demo-Passw0rd!'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
