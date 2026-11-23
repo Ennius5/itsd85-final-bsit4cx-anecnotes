@@ -1,29 +1,47 @@
 import 'package:flutter/material.dart';
 
-/// API base URL, injected at build time:
-/// web: --dart-define=API_BASE_URL=/api/v1 (same origin through Caddy)
-/// Android: `--dart-define=API_BASE_URL=https://PUBLIC_HOST/api/v1`
-const apiBaseUrl = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'http://localhost:8080/api/v1',
-);
+import 'api/anecdote_repository.dart';
+import 'api/api_client.dart';
+import 'app_scope.dart';
+import 'auth/auth_controller.dart';
+import 'screens/anecdote_list_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() {
-  runApp(const AnecnotesApp());
+  final api = ApiClient();
+  final auth = AuthController(api, SecureTokenStore())..restore();
+  runApp(AnecnotesApp(auth: auth, anecdotes: AnecdoteRepository(api)));
 }
 
+const brandColor = Color(0xFF1F3864);
+
 class AnecnotesApp extends StatelessWidget {
-  const AnecnotesApp({super.key});
+  const AnecnotesApp({super.key, required this.auth, required this.anecdotes});
+
+  final AuthController auth;
+  final AnecdoteRepository anecdotes;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Anecnotes',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F3864)),
-      ),
-      home: const Scaffold(
-        body: Center(child: Text('Anecnotes')),
+    return AppScope(
+      auth: auth,
+      anecdotes: anecdotes,
+      child: MaterialApp(
+        title: 'Anecnotes',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: brandColor),
+          appBarTheme: const AppBarTheme(backgroundColor: brandColor, foregroundColor: Colors.white),
+          inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
+        ),
+        home: ListenableBuilder(
+          listenable: auth,
+          builder: (context, _) => switch (auth.status) {
+            AuthStatus.unknown => const Scaffold(body: Center(child: CircularProgressIndicator())),
+            AuthStatus.signedOut => const LoginScreen(),
+            AuthStatus.signedIn => const AnecdoteListScreen(),
+          },
+        ),
       ),
     );
   }

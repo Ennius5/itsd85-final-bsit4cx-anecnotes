@@ -146,7 +146,7 @@ At most one `pending` flag per student and category; later matching anecdotes at
 | Situation | Behavior | User sees |
 |---|---|---|
 | Main provider timeout (> `AI_TIMEOUT_SECONDS`), 429 or 5xx | Retry once on the backup provider | Nothing (analysis appears later) |
-| Response is not valid JSON or fails the schema | One repair retry on the same provider, then backup | Nothing |
+| Response is not valid JSON or fails the schema | Retry on the backup provider | Nothing |
 | Both providers fail | Job retries with backoff (5 tries over about 2 hours), then marks `failed` | "AI analysis unavailable. The record is saved; analysis will retry." |
 | Daily quota exhausted | Jobs wait until the next day (rate-limited queue) | "Analysis pending" |
 | `AI_ENABLED=false` | No calls; flags use the count and similarity rules on human categories only | "AI analysis is turned off" |
