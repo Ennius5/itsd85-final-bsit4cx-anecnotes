@@ -50,6 +50,8 @@ services:
       DB_HOST: db
       DB_PORT: 5432
     command: ["php", "artisan", "queue:work", "--tries=5", "--backoff=60", "--max-time=3600"]
+    healthcheck:
+      disable: true # the base image's check probes the web server, which this container doesn't run
     depends_on:
       db:
         condition: service_healthy

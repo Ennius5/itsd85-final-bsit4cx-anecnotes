@@ -14,9 +14,21 @@ AI-assisted anecdotal records and attendance for Valencia National High School, 
 
 ## Architecture
 
-_Diagram: `docs/diagrams/architecture.png` (M2)._
+```mermaid
+flowchart LR
+    phone["Android app<br/>(offline-first, encrypted SQLite)"] -->|HTTPS| cf["Cloudflare Tunnel"]
+    browser["Web browser"] -->|HTTPS| cf
+    subgraph server["Docker Compose on one host"]
+        cf --> proxy["Caddy<br/>reverse proxy"]
+        proxy -->|"/"| web["web<br/>Flutter build on nginx"]
+        proxy -->|"/api"| api["api<br/>Laravel 12 on FrankenPHP"]
+        api --> db[("db<br/>PostgreSQL 17 + pg_trgm")]
+        queue["queue<br/>Laravel worker"] --> db
+    end
+    queue -->|"redacted text only"| ai["AI provider<br/>Groq (main) / OpenRouter (backup)"]
+```
 
-Caddy (reverse proxy) → Flutter web (nginx) and Laravel API (FrankenPHP) → PostgreSQL 17 (pg_trgm). A queue worker runs AI analysis through an OpenAI-compatible provider (Groq free tier, OpenRouter backup). Cloudflare Tunnel provides public HTTPS.
+The API saves records and returns at once; the queue worker runs AI analysis and repeated-behavior detection in the background, so an AI outage never blocks a teacher. Design documents: [docs/](docs/README.md).
 
 ## Tech stack
 
@@ -62,7 +74,8 @@ _Added in M3 (sample data only)._
 
 ## Documentation
 
-_D1–D4 PDFs will be linked here from `docs/`._
+M2 design drafts: [user stories](docs/01-system-documentation/design/user-stories.md) · [ERD](docs/01-system-documentation/design/erd.md) · [wireframes](docs/01-system-documentation/design/wireframes.md) · [integration design](docs/01-system-documentation/design/integration-design.md) · [draft OpenAPI](docs/03-api/openapi.yaml).
+D1–D4 PDFs will be linked here.
 
 ## License and credits
 
