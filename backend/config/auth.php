@@ -114,4 +114,7 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    // Failed logins allowed per minute per email and IP before 429.
+    'login_max_attempts' => (int) env('LOGIN_MAX_ATTEMPTS', 5),
+
 ];

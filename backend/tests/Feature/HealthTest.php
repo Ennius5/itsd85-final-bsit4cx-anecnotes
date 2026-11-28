@@ -19,5 +19,5 @@ it('serves the OpenAPI document', function () {
 });
 
 it('rejects unauthenticated access to protected routes', function () {
-    $this->getJson('/api/v1/user')->assertUnauthorized();
+    $this->getJson('/api/v1/auth/me')->assertUnauthorized();
 });

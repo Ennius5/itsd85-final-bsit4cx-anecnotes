@@ -66,11 +66,18 @@ cd frontend && flutter analyze && flutter test
 
 ## Deployment
 
-GitHub Actions (`.github/workflows/ci-cd.yml`) runs the `backend` and `frontend` checks on every pull request. On merge to `main`, a self-hosted runner on the server rebuilds with `docker compose up -d --build` and checks that `/api/health` reports the new commit. Public HTTPS uses Cloudflare Tunnel (hosting option A).
+GitHub Actions (`.github/workflows/ci-cd.yml`) runs the `backend` and `frontend` checks on every pull request. On merge to `main`, a self-hosted runner on the server rebuilds with `docker compose up -d --build` and checks that `/api/health` reports the new commit. Public HTTPS uses Cloudflare Tunnel (hosting option A). Details: [docs/deployment.md](docs/deployment.md).
 
 ## Demo accounts
 
-_Added in M3 (sample data only)._
+Sample data only (fictional students; LRNs start with `9999`). The password is the server's `DEMO_PASSWORD`, given to the panel separately.
+
+| Role | Email |
+|---|---|
+| Admin | `admin@demo.anecnotes.test` |
+| Adviser (8-Rizal) | `adviser@demo.anecnotes.test` |
+| Teacher | `teacher@demo.anecnotes.test` |
+| Guidance | `guidance@demo.anecnotes.test` |
 
 ## Documentation
 

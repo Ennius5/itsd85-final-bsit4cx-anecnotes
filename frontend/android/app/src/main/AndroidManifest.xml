@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Talks to the Anecnotes API. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="anecnotes"
+        android:label="Anecnotes"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

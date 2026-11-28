@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('role', 16)->default('teacher')->index(); // admin | teacher | guidance
+            $table->boolean('is_active')->default(true);
+            $table->timestampTz('locked_until')->nullable();
+            $table->timestampTz('last_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
