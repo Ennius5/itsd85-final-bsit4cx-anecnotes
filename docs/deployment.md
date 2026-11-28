@@ -35,7 +35,7 @@ The runner runs in the user's session, not as a Windows service, because Docker 
 
 - Secrets stay in `C:\anecnotes\prod.env` on the server; GitHub never stores them.
 - The repository is public, so workflow runs from outside contributors' pull requests need the owner's approval (Settings → Actions → "Require approval for all external contributors"). Without this, a fork could run code on the self-hosted runner.
-- Only Caddy publishes a port (8080 on the host). The database and API are reachable only inside the Docker network.
+- Only Caddy publishes a port (`HTTP_PORT` on the host, default 8080). The database and API are reachable only inside the Docker network.
 
 ## Manual commands
 
