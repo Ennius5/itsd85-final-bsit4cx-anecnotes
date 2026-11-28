@@ -19,7 +19,7 @@ A counselor confirms or dismisses every flag. The system never acts on a flag by
 |---|---|---|
 | Provider | Groq free tier | Local server on the school's machine |
 | Backup | OpenRouter free models | — |
-| Model | `llama-3.1-8b-instant` (Groq) | Qwen2.5 3B/7B Instruct (Apache 2.0) via llama.cpp or Ollama |
+| Model | `qwen/qwen3.8-27b` (Groq) | Qwen2.5 3B/7B Instruct (Apache 2.0) via llama.cpp or Ollama |
 | Data sent | Synthetic, redacted anecdotes only | Real anecdotes never leave the school server |
 | Cost | Free | Free (open-weight model, school hardware) |
 
@@ -159,7 +159,7 @@ Every call writes one `ai_analyses` row and one `audit_logs` row (`action = ai_c
 
 | Field | Example |
 |---|---|
-| provider, model | `groq`, `llama-3.1-8b-instant` |
+| provider, model | `groq`, `qwen/qwen3.8-27b` |
 | outcome | `ok`, `fallback_used`, `failed` |
 | category, severity, confidence | `aggression_bullying`, `medium`, `0.82` |
 | latency_ms, attempt | `640`, `1` |

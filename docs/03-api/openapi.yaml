@@ -823,7 +823,7 @@ paths:
                   current: { $ref: "#/components/schemas/AiAnalysis" }
                   history: { type: array, items: { $ref: "#/components/schemas/AiAnalysis" } }
               example:
-                current: { id: 311, kind: classification, provider: groq, model: llama-3.1-8b-instant, outcome: ok, category: aggression_bullying, severity: medium, confidence: 0.82, output: "[STUDENT] pushed a classmate and called him names during recess.", latency_ms: 640, created_at: "2026-11-23T10:18:01+08:00", label: AI suggestion }
+                current: { id: 311, kind: classification, provider: groq, model: qwen/qwen3.8-27b, outcome: ok, category: aggression_bullying, severity: medium, confidence: 0.82, output: "[STUDENT] pushed a classmate and called him names during recess.", latency_ms: 640, created_at: "2026-11-23T10:18:01+08:00", label: AI suggestion }
                 history: []
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
@@ -889,7 +889,7 @@ paths:
                 window_end: "2026-11-25"
                 status: pending
                 anecdote_ids: [9a7c2e11-4b3d-4f8a-9e6b-1c2d3e4f5a6b]
-                summary: { id: 340, kind: summary, provider: groq, model: llama-3.1-8b-instant, outcome: ok, output: "Three incidents of physical aggression toward classmates in four weeks, mostly at recess.", latency_ms: 910, created_at: "2026-11-25T08:00:12+08:00", label: AI-generated - verify against the records }
+                summary: { id: 340, kind: summary, provider: groq, model: qwen/qwen3.8-27b, outcome: ok, output: "Three incidents of physical aggression toward classmates in four weeks, mostly at recess.", latency_ms: 910, created_at: "2026-11-25T08:00:12+08:00", label: AI-generated - verify against the records }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
