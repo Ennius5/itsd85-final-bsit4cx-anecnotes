@@ -40,6 +40,13 @@ void main() {
       expect(jsonDecode(login.body)['email'], 'adviser@demo.test'); // trimmed and lower-cased
     });
 
+    testWidgets('unreadable token storage falls back to the sign-in screen', (tester) async {
+      await tester.pumpWidget(FakeServer().app(store: BrokenTokenStore()));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('sign-in')), findsOneWidget);
+    });
+
     testWidgets('signing out clears the token', (tester) async {
       final store = MemoryTokenStore();
       await tester.pumpWidget(FakeServer().app(store: store, signedIn: true));

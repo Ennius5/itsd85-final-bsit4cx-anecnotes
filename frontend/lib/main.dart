@@ -8,6 +8,8 @@ import 'screens/anecdote_list_screen.dart';
 import 'screens/login_screen.dart';
 
 void main() {
+  // Secure storage uses a platform channel, which needs the binding before runApp.
+  WidgetsFlutterBinding.ensureInitialized();
   final api = ApiClient();
   final auth = AuthController(api, SecureTokenStore())..restore();
   runApp(AnecnotesApp(auth: auth, anecdotes: AnecdoteRepository(api)));

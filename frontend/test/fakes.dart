@@ -18,6 +18,12 @@ class MemoryTokenStore implements TokenStore {
   Future<void> write(String t) async => token = t;
 }
 
+/// Storage that fails to read, like a Keystore that was reset.
+class BrokenTokenStore extends MemoryTokenStore {
+  @override
+  Future<String?> read() async => throw Exception('keystore unavailable');
+}
+
 /// A tiny in-memory stand-in for the Anecnotes API.
 class FakeServer {
   FakeServer({this.role = 'teacher', this.userId = 1});
@@ -105,10 +111,10 @@ class FakeServer {
   Map<String, dynamic> _user() => {'id': userId, 'name': 'Maria Santos', 'email': 'adviser@demo.test', 'role': role, 'is_active': true};
 
   /// Builds the app wired to this fake server.
-  Widget app({MemoryTokenStore? store, bool signedIn = false}) {
+  Widget app({TokenStore? store, bool signedIn = false}) {
     final api = ApiClient(httpClient: client, baseUri: Uri.parse('http://test/api/v1'));
     final tokens = store ?? MemoryTokenStore();
-    if (signedIn) tokens.token = 'tok';
+    if (signedIn && tokens is MemoryTokenStore) tokens.token = 'tok';
     final auth = AuthController(api, tokens)..restore();
     return AnecnotesApp(auth: auth, anecdotes: AnecdoteRepository(api));
   }

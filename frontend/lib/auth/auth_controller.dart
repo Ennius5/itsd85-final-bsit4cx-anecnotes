@@ -39,7 +39,14 @@ class AuthController extends ChangeNotifier {
 
   /// Restores a saved session at app start.
   Future<void> restore() async {
-    final token = await _store.read();
+    String? token;
+    try {
+      token = await _store.read();
+    } catch (e) {
+      // Unreadable storage (e.g. Keystore reset): fall back to the sign-in screen.
+      debugPrint('Could not read the saved session: $e');
+      await _store.clear().catchError((_) {});
+    }
     if (token == null) {
       status = AuthStatus.signedOut;
       notifyListeners();
