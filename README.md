@@ -56,8 +56,7 @@ docker compose up -d --build
 The port is `HTTP_PORT` in `.env` (default 8080); use your port in the links above if you changed it.
 
 Android on a USB-connected phone: `adb reverse tcp:8080 tcp:8080`, then `cd frontend && flutter run`.
-Over Wi-Fi instead: allow the port in Windows Firewall (private networks), then
-`flutter run --dart-define=API_BASE_URL=http://<laptop-ip>:<HTTP_PORT>/api/v1`.
+Over Wi-Fi or a phone hotspot: `powershell -ExecutionPolicy Bypass -File deploy\phone-wifi.ps1`. Full guide: [docs/phone-testing.md](docs/phone-testing.md).
 
 ## Test
 
