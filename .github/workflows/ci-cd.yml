@@ -5,9 +5,11 @@ on:
   push:
     branches: [main]
 
+# Superseded pull-request runs are cancelled. Runs on main are not: cancelling one
+# mid-deploy leaves containers half-recreated, and the next deploy then fails.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # Required check "backend" (branch ruleset, §10.1)
