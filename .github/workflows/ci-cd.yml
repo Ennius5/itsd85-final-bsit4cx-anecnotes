@@ -111,9 +111,11 @@ jobs:
       - name: Smoke test /api/health shows this commit
         run: |
           $sha = "${{ github.sha }}".Substring(0, 7)
+          $port = (Select-String -Path .env -Pattern '^HTTP_PORT=(\d+)' | Select-Object -First 1).Matches.Groups[1].Value
+          if (-not $port) { $port = '8080' }
           for ($i = 0; $i -lt 30; $i++) {
             try {
-              $h = Invoke-RestMethod http://localhost:8080/api/health -TimeoutSec 5
+              $h = Invoke-RestMethod "http://localhost:$port/api/health" -TimeoutSec 5
               if ($h.commit -eq $sha -and $h.status -eq 'ok') { Write-Host "Healthy at $sha"; exit 0 }
             } catch {}
             Start-Sleep -Seconds 5
